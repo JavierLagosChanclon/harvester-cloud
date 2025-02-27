@@ -66,3 +66,4 @@ jobs:
     steps:
       - name: Run Terraform Plan
         run: terraform plan --var "do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
+        working-directory: projects/digitalocean/
