@@ -24,7 +24,7 @@ jobs:
           chmod 600 $HOME/.kube/config
       - name: Run Kubectl Commands
         run: |
-          echo -e "\n=== NODES ===" >> analysis.txt
+          echo -e "\n=== NODES ===" > analysis.txt
           kubectl get nodes -o wide --show-labels >> analysis.txt
 
           echo -e "\n=== ALL PODS ===" >> analysis.txt
@@ -43,7 +43,6 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         with:
           prompt: |
-            Actúa como SRE senior experto en Kubernetes.
             Please act as an SRE Senior expert in Kubernetes and cloud-native.
             Analyze the state of the cluster and answer in the following format.
             1 Problems detected
