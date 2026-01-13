@@ -1,0 +1,61 @@
+name: K8s Gemini Analysis
+
+on:
+  workflow_dispatch:
+    inputs:
+      kubeconfig_base64:
+        description: 'Kubeconfig on Base64'
+        required: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+      - name: Setup Kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ inputs.kubeconfig_base64 }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+      - name: Run Kubectl Commands
+        run: |
+          echo "=== CLUSTER INFO ===" > analysis.txt
+          kubectl cluster-info >> analysis.txt
+
+          echo -e "\n=== NODES ===" >> analysis.txt
+          kubectl get nodes -o wide --show-labels >> analysis.txt
+
+          echo -e "\n=== ALL PODS ===" >> analysis.txt
+          kubectl get pods -A >> analysis.txt
+
+          echo -e "\n=== ALL EVENTS ===" >> analysis.txt
+          kubectl get events -A >> analysis.txt
+      - name: Load Logs to Env
+        run: |
+          {
+            echo 'K8S_LOGS<<EOF'
+            cat analysis.txt
+            echo EOF
+          } >> $GITHUB_ENV
+      - name: Analyze with Gemini
+        uses: google-github-actions/run-gemini-cli@v0
+        env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        with:
+          prompt: |
+            Actúa como SRE senior experto en Kubernetes.
+            Please act as an SRE Senior expert in Kubernetes and cloud-native.
+            Analyze the state of the cluster and answer in the following format.
+            1 Problems detected
+            2 Main reason of the problems
+            3 Impact from 1 to 5
+            4 Specific steps required to fix the issue
+            
+            Logs:
+            ---
+            ${{ env.K8S_LOGS }}
