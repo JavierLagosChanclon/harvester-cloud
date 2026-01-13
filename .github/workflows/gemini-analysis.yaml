@@ -24,17 +24,12 @@ jobs:
           chmod 600 $HOME/.kube/config
       - name: Run Kubectl Commands
         run: |
-          echo "=== CLUSTER INFO ===" > analysis.txt
-          kubectl cluster-info >> analysis.txt
-
           echo -e "\n=== NODES ===" >> analysis.txt
           kubectl get nodes -o wide --show-labels >> analysis.txt
 
           echo -e "\n=== ALL PODS ===" >> analysis.txt
           kubectl get pods -A >> analysis.txt
 
-          echo -e "\n=== ALL EVENTS ===" >> analysis.txt
-          kubectl get events -A >> analysis.txt
       - name: Load Logs to Env
         run: |
           {
