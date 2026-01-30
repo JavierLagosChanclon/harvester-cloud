@@ -39,9 +39,8 @@ jobs:
           } >> $GITHUB_ENV
       - name: Analyze with Gemini
         uses: google-github-actions/run-gemini-cli@v0
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           prompt: |
             Please act as an SRE Senior expert in Kubernetes and cloud-native.
             Analyze the state of the cluster and answer in the following format.
