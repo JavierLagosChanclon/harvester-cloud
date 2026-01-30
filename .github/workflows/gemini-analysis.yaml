@@ -28,7 +28,7 @@ jobs:
           kubectl get nodes -o wide --show-labels >> analysis.txt
 
           echo -e "\n=== ALL PODS ===" >> analysis.txt
-          kubectl get pods -A >> analysis.txt
+          kubectl get pods -A | grep -v "Running\|Completed" >> analysis.txt
 
       - name: Load Logs to Env
         run: |
@@ -39,6 +39,7 @@ jobs:
           } >> $GITHUB_ENV
       - name: Analyze with Gemini
         uses: google-github-actions/run-gemini-cli@v0
+        id: gemini_analysis
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           prompt: |
