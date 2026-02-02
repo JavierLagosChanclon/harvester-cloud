@@ -28,7 +28,7 @@ jobs:
           kubectl get nodes -o wide --show-labels >> analysis.txt
 
           echo -e "\n=== ALL PODS ===" >> analysis.txt
-          kubectl get pods -A | grep -v "Running\|Completed" >> analysis.txt
+          kubectl get pods -A >> analysis.txt
 
       - name: Load Logs to Env
         run: |
@@ -53,8 +53,8 @@ jobs:
           done
           echo "Debug pod name: $POD_NAME"
 
-          echo "=== Sleeping 180 seconds ==="
-          sleep 180s
+          echo "=== Sleeping 300 seconds required for the performance testing to finish ==="
+          sleep 300s
           
           
           echo "Waiting for pod $POD_NAME to complete..."
