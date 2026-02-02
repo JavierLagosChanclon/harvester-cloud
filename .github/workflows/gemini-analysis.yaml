@@ -70,13 +70,16 @@ jobs:
             sleep 5
           done
 
-          kubectl logs $POD_NAME > performance_logs.txt
+          kubectl logs $POD_NAME >> performance_logs.txt
 
+      - name: Load Performance logs to Env
+        run: |
           {
             echo 'PERF_LOGS<<EOF'
             cat performance_logs.txt
             echo EOF
           } >> $GITHUB_ENV
+
       - name: Analyze with Gemini
         uses: google-github-actions/run-gemini-cli@v0
         id: gemini_analysis
