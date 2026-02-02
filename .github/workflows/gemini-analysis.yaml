@@ -44,14 +44,7 @@ jobs:
           echo "Target node: $NODE_NAME"
 
           echo "=== Creating debug pod ==="
-          kubectl debug node/$NODE_NAME \
-            --image=docker.io/jlagossuse/custom-performance-harvester-image \
-            -- bash -c "\
-              cp /tmp/performance.sh /host/tmp/performance.sh && \
-              chmod +x /host/tmp/performance.sh && \
-              chroot /host bash /tmp/performance.sh" \
-            --restart=Never \
-            --quiet
+          kubectl debug node/$NODE_NAME --image=docker.io/jlagossuse/custom-performance-harvester-image -- bash -c "cp /tmp/performance.sh /host/tmp/performance.sh && chmod +x /host/tmp/performance.sh && chroot /host bash /tmp/performance.sh" --restart=Never --quiet
 
           POD_NAME=""
           while [ -z "$POD_NAME" ]; do
