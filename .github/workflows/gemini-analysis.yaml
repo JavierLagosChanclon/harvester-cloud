@@ -37,6 +37,46 @@ jobs:
             cat analysis.txt
             echo EOF
           } >> $GITHUB_ENV
+      - name: Run Performance Pod Debug
+        run: |
+          echo "=== Detecting first node ==="
+          NODE_NAME=$(kubectl get nodes --no-headers --sort-by=.metadata.creationTimestap | awk '{print $1}' | tail -n1)
+          echo "Target node: $NODE_NAME"
+
+          echo "=== Creating debug pod ==="
+          kubectl debug node/$NODE_NAME \
+            --image=docker.io/jlagossuse/custom-performance-harvester-image \
+            -- bash -c "\
+              cp /tmp/performance.sh /host/tmp/performance.sh && \
+              chmod +x /host/tmp/performance.sh && \
+              chroot /host bash /tmp/performance.sh" \
+            --restart=Never \
+            --quiet
+
+          POD_NAME=""
+          while [ -z "$POD_NAME" ]; do
+            POD_NAME=$(kubectl get pods --no-headers --sort-by=.metadata.creationTimestamp | grep $NODE_NAME | awk '{print $1}' | tail -n1)
+            sleep 2
+          done
+          echo "Debug pod name: $POD_NAME"
+
+          echo "Waiting for pod $POD_NAME to complete..."
+          while true; do
+            STATUS=$(kubectl get pod $POD_NAME -o jsonpath='{.status.phase}')
+            if [ "$STATUS" == "Succeeded" ] || [ "$STATUS" == "Failed" ]; then
+              echo "Pod completed with status: $STATUS"
+              break
+            fi
+            sleep 5
+          done
+
+          kubectl logs $POD_NAME > performance_logs.txt
+
+          {
+            echo 'PERF_LOGS<<EOF'
+            cat performance_logs.txt
+            echo EOF
+          } >> $GITHUB_ENV
       - name: Analyze with Gemini
         uses: google-github-actions/run-gemini-cli@v0
         id: gemini_analysis
@@ -53,6 +93,9 @@ jobs:
             Logs:
             ---
             ${{ env.K8S_LOGS }}
+            
+            Performance node logs:
+            ${{ env.PERF_LOGS }}
       - name: Publish Report
         if: always()
         run: |
