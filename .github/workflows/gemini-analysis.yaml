@@ -89,12 +89,13 @@ jobs:
             2 Main reason of the problems
             3 Impact from 1 to 5
             4 Specific steps required to fix the issue
+            5 Analysis of the performance results and overall overview
             
             Logs:
             ---
             ${{ env.K8S_LOGS }}
             
-            Performance node logs:
+            Node Performance results:
             ${{ env.PERF_LOGS }}
       - name: Publish Report
         if: always()
