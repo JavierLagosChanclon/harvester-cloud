@@ -53,6 +53,10 @@ jobs:
           done
           echo "Debug pod name: $POD_NAME"
 
+          echo "=== Sleeping 180 seconds ==="
+          sleep 180s
+          
+          
           echo "Waiting for pod $POD_NAME to complete..."
           while true; do
             STATUS=$(kubectl get pod $POD_NAME -o jsonpath='{.status.phase}')
