@@ -37,6 +37,27 @@ jobs:
           qemu-img convert -O qcow2 \
             ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${IMAGE_NAME}.iso \
             ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${IMAGE_NAME}.qcow2
+      - name: Convert ISO to fixed raw
+        run: |
+          qemu-img convert -f qcow2 -O raw \
+            ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${IMAGE_NAME}.qcow2 \
+            ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${IMAGE_NAME}.raw
+      
+          MB=$((1024 * 1024))
+          size=$(qemu-img info -f raw --output json \
+            ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${IMAGE_NAME}.raw | \
+            gawk 'match($0, /"virtual-size": ([0-9]+),/, val) {print val[1]}' | head -n1)
+      
+          rounded_size=$((($size/$MB + 1) * $MB))
+      
+          qemu-img resize -f raw \
+            ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${IMAGE_NAME}.raw \
+            $rounded_size
+      - name: Convert fixed raw to VHD
+        run: |
+          qemu-img convert -f raw -o subformat=fixed,force_size -O vpc \
+          ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${IMAGE_NAME}.raw \
+          ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${IMAGE_NAME}.vhd
       - name: Compress IMG and QCOW2 with bzip2
         run: |
           bzip2 -9 \
@@ -52,6 +73,7 @@ jobs:
             ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${{ env.IMAGE_NAME }}.iso
             ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${{ env.IMAGE_NAME }}.img.bz2
             ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${{ env.IMAGE_NAME }}.qcow2.bz2
+            ${{ github.workspace }}/modules/harvester/kiwi-os-image-builder/${{ env.IMAGE_NAME }}.vhd
 
   release:
     runs-on: ubuntu-latest
@@ -69,6 +91,7 @@ jobs:
         run: |
           gh release create "build-${GITHUB_RUN_NUMBER}" \
             ./artifact/${IMAGE_NAME}.iso \
+            ./artifact/${IMAGE_NAME}.vhd \
             ./artifact/${IMAGE_NAME}.img.bz2 \
             ./artifact/${IMAGE_NAME}.qcow2.bz2 \
             --title "Certified openSUSE Leap 15.6 image for harvester-cloud - build-${GITHUB_RUN_NUMBER}" \
