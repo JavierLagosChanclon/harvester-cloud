@@ -24,7 +24,7 @@ jobs:
               zypper addrepo http://download.opensuse.org/repositories/Virtualization:/Appliances:/Builder/openSUSE_Leap_16.0 kiwi &&
               zypper --gpg-auto-import-keys refresh &&
               zypper in -y python3-kiwi git binutils qemu-tools squashfs xorriso dosfstools e2fsprogs &&
-              kiwi system build --description /build --set-repo https://download.opensuse.org/distribution/leap/15.6/repo/oss --target-dir /tmp/kiwi-outputs/ &&
+              kiwi system build --description /build --set-repo https://download.opensuse.org/distribution/leap/16.0/repo/oss --target-dir /tmp/kiwi-outputs/ &&
               cp /tmp/kiwi-outputs/*.iso /build/${IMAGE_NAME}.iso
             "
       - name: Install qemu-utils and tools
