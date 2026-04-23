@@ -11,3 +11,10 @@ systemctl enable google-guest-agent
 systemctl enable google-osconfig-agent
 systemctl enable google-startup-scripts.service
 systemctl enable NetworkManager
+
+USER_NAME="opensuse"
+PASSWORD="opensuse"
+useradd -m -s /bin/bash "$USER_NAME"
+echo "$USER_NAME:$PASSWORD" | chpasswd
+echo "$USER_NAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER_NAME
+chmod 440 /etc/sudoers.d/$USER_NAME
